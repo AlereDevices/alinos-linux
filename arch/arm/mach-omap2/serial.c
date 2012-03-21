@@ -323,8 +323,7 @@ void __init omap_serial_init_port(struct omap_board_data *bdata,
 
 	oh->dev_attr = uart;
 
-	if (((cpu_is_omap34xx() || cpu_is_omap44xx()) && bdata->pads)
-			&& !uart_debug)
+	if ((!cpu_is_omap24xx() && bdata->pads)	&& !uart_debug)
 		device_init_wakeup(&pdev->dev, true);
 }
 
