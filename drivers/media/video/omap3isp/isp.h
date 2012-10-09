@@ -129,6 +129,7 @@ struct isp_platform_callback {
 	int (*csiphy_config)(struct isp_csiphy *phy,
 			     struct isp_csiphy_dphy_cfg *dphy,
 			     struct isp_csiphy_lanes_cfg *lanes);
+	void (*set_pixel_clock)(struct isp_device *isp, unsigned int pixelclk);
 };
 
 /*

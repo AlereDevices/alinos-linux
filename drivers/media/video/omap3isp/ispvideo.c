@@ -352,7 +352,7 @@ static int isp_video_validate_pipeline(struct isp_pipeline *pipe)
 			unsigned int rate = UINT_MAX;
 
 			omap3isp_ccdc_max_rate(&isp->isp_ccdc, &rate);
-			if (pipe->external_rate > rate)
+			if (isp->isp_ccdc.vpcfg.pixelclk > rate)
 				return -ENOSPC;
 		}
 
