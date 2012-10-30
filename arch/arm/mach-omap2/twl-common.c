@@ -267,7 +267,7 @@ static struct regulator_init_data omap4_vaux2_idata = {
 					| REGULATOR_CHANGE_STATUS,
 	},
 };
-
+#if 0
 static struct regulator_init_data omap4_vaux3_idata = {
 	.constraints = {
 		.min_uV			= 1000000,
@@ -280,7 +280,7 @@ static struct regulator_init_data omap4_vaux3_idata = {
 					| REGULATOR_CHANGE_STATUS,
 	},
 };
-
+#endif
 static struct regulator_consumer_supply omap4_vmmc_supply[] = {
 	REGULATOR_SUPPLY("vmmc", "omap_hsmmc.0"),
 };
@@ -493,10 +493,10 @@ void __init omap4_pmic_get_config(struct twl4030_platform_data *pmic_data,
 
 	if (regulators_flags & TWL_COMMON_REGULATOR_VAUX2 && !pmic_data->vaux2)
 		pmic_data->vaux2 = &omap4_vaux2_idata;
-
+#if 0
 	if (regulators_flags & TWL_COMMON_REGULATOR_VAUX3 && !pmic_data->vaux3)
 		pmic_data->vaux3 = &omap4_vaux3_idata;
-
+#endif
 	if (regulators_flags & TWL_COMMON_REGULATOR_VMMC && !pmic_data->vmmc)
 		pmic_data->vmmc = &omap4_vmmc_idata;
 
