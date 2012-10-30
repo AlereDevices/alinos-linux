@@ -169,7 +169,6 @@ static void __init omap3_beagle_init_rev(void)
 
 char expansionboard_name[16];
 char expansionboard2_name[16];
-char camera_name[16];
 
 enum {
 	EXPANSION_MMC_NONE = 0,
@@ -741,65 +740,6 @@ static struct i2c_board_info __initdata beagle_i2c2_bbtoys_ulcd[] = {};
 static void __init omap3beagle_tsc2007_init(void) { return; }
 #endif
 
-#if defined(CONFIG_VIDEO_MT9P031)
-#include <media/mt9p031.h>
-#include <asm/mach-types.h>
-#include "devices.h"
-#include "../../../drivers/media/video/omap3isp/isp.h"
-
-#define MT9P031_RESET_GPIO	98
-#define MT9P031_XCLK		ISP_XCLK_A
-#define MT9P031_EXT_FREQ	21000000
-
-static struct regulator *reg_1v8, *reg_2v8;
-
-static int beagle_cam_set_xclk(struct v4l2_subdev *subdev, int hz)
-{
-	struct isp_device *isp = v4l2_dev_to_isp_device(subdev->v4l2_dev);
-
-	return isp->platform_cb.set_xclk(isp, hz, MT9P031_XCLK);
-}
-
-static struct mt9p031_platform_data beagle_mt9p031_platform_data = {
-	.set_xclk	= beagle_cam_set_xclk,
-	.reset		= MT9P031_RESET_GPIO,
-	.ext_freq	= MT9P031_EXT_FREQ,
-	.target_freq	= 48000000,
-};
-
-static struct i2c_board_info mt9p031_camera_i2c_device = {
-	I2C_BOARD_INFO("mt9p031", 0x48),
-	.platform_data = &beagle_mt9p031_platform_data,
-};
-
-static struct isp_subdev_i2c_board_info mt9p031_camera_subdevs[] = {
-	{
-		.board_info = &mt9p031_camera_i2c_device,
-		.i2c_adapter_id = 2,
-	},
-	{ NULL, 0, },
-};
-
-static struct isp_v4l2_subdevs_group beagle_camera_subdevs[] = {
-	{
-		.subdevs = mt9p031_camera_subdevs,
-		.interface = ISP_INTERFACE_PARALLEL,
-		.bus = {
-			.parallel = {
-				.data_lane_shift = 0,
-				.clk_pol = 1,
-				.bridge = ISPCTRL_PAR_BRIDGE_DISABLE,
-			}
-		},
-	},
-	{ },
-};
-
-static struct isp_platform_data beagle_isp_platform_data = {
-	.subdevs = beagle_camera_subdevs,
-};
-#endif
-
 static int __init omap3_beagle_i2c_init(void)
 {
 	omap3_pmic_get_config(&beagle_twldata,
@@ -927,15 +867,6 @@ static int __init expansionboard2_setup(char *str)
 		return -EINVAL;
 	strncpy(expansionboard2_name, str, 16);
 	printk(KERN_INFO "Beagle second expansionboard: %s\n", expansionboard2_name);
-	return 0;
-}
-
-static int __init camera_setup(char *str)
-{
-	if (!str)
-		return -EINVAL;
-	strncpy(camera_name, str, 16);
-	printk(KERN_INFO "Beagle camera: %s\n", camera_name);
 	return 0;
 }
 
@@ -1207,39 +1138,11 @@ static void __init omap3_beagle_init(void)
 
 static int __init omap3_beagle_late_initcall(void)
 {
-#if defined(CONFIG_VIDEO_MT9P031)
-	int ret = 0;
-
-	if ((!strcmp(camera_name, "lbcm5m1")) || (!strcmp(camera_name, "li5m03")))
-	{
-		if (!cpu_is_omap3630())
-			return 0;
-
-		pr_info("Beagle camera: MT9P031 init");
-
-		reg_1v8 = regulator_get(NULL, "cam_1v8");
-		if (IS_ERR(reg_1v8))
-			pr_err("%s: cannot get cam_1v8 regulator\n", __func__);
-		else
-			regulator_enable(reg_1v8);
-
-		reg_2v8 = regulator_get(NULL, "cam_2v8");
-		if (IS_ERR(reg_2v8))
-			pr_err("%s: cannot get cam_2v8 regulator\n", __func__);
-		else
-			regulator_enable(reg_2v8);
-
-		ret = omap3_init_camera(&beagle_isp_platform_data);
-			if (ret < 0)
-				pr_warn("Beagle camera: MT9P031: Failed registering camera device!\n");
-	}
-#endif
 	return 0;
 }
 
 early_param("buddy", expansionboard_setup);
 early_param("buddy2", expansionboard2_setup);
-early_param("camera", camera_setup);
 
 late_initcall(omap3_beagle_late_initcall);
 
