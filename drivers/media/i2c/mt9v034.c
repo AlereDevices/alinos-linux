@@ -412,7 +412,7 @@ static int mt9v034_s_stream(struct v4l2_subdev *subdev, int enable)
 		return ret;
 
 	ret = mt9v034_write(client, MT9V034_HORIZONTAL_BLANKING,
-			    max(43, 660 - rect->width));
+			    MT9V034_HORIZONTAL_BLANKING_MAX);
 	if (ret < 0)
 		return ret;
 

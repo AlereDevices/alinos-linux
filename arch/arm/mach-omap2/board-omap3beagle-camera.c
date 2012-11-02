@@ -326,7 +326,7 @@ static struct isp_v4l2_subdevs_group beagle_camera_subdevs[] = {
 #define MT9V034_RESET_GPIO	98
 #define MT9V034_TRIGGER_GPIO 
 #define MT9V034_XCLK		ISP_XCLK_A
-#define MT9V034_EXT_FREQ	27000000
+#define MT9V034_EXT_FREQ	28800000
 /* 
    sysclk = clk_27 (on board)
    SW4: connect pin.3 to pin.1 
