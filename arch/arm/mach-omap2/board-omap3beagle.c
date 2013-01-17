@@ -719,7 +719,8 @@ static int __init omap3_beagle_i2c_init(void)
 		omap_register_i2c_bus(2, 400, zippy_i2c2_rtc, ARRAY_SIZE(zippy_i2c2_rtc));
 		break;
 	default:
-		omap_register_i2c_bus(2, 400, NULL, 0);
+		/* 100kHz for Aptina sensor modules */
+		omap_register_i2c_bus(2, 100, NULL, 0);
 	}
 
 	/* Bus 3 is attached to the DVI port where devices like the pico DLP

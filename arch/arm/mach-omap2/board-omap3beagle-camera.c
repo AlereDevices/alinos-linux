@@ -404,7 +404,6 @@ static int __init beagle_camera_init(void)
 	else
 		regulator_enable(reg_2v8);
 
-	omap_register_i2c_bus(2, 100, NULL, 0);
 #ifdef CONFIG_VIDEO_MT9P031
 	gpio_request(MT9P031_RESET_GPIO, "cam_rst");
 	gpio_direction_output(MT9P031_RESET_GPIO, 0);
