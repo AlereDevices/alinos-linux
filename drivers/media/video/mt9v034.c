@@ -302,12 +302,12 @@ static int mt9v034_power_on(struct mt9v034 *mt9v034)
 		return ret;
 
 	ret = mt9v034_write(client, MT9V034_CHIP_CONTROL,
-				 MT9V034_CHIP_CONTROL_MASTER_MODE
+				 MT9V034_CHIP_CONTROL_SNAPSHOT_MODE
 		       | MT9V034_CHIP_CONTROL_SEQUENTIAL);
 	if(ret < 0)
 		return ret;
 
-	mt9v034->chip_control = MT9V034_CHIP_CONTROL_MASTER_MODE
+	mt9v034->chip_control = MT9V034_CHIP_CONTROL_SNAPSHOT_MODE
 		       				| MT9V034_CHIP_CONTROL_SEQUENTIAL;
 	return ret;
 }
@@ -417,7 +417,7 @@ static int mt9v034_s_stream(struct v4l2_subdev *subdev, int enable)
 	if (ret < 0)
 		return ret;
 
-	/* Switch to master "normal" mode */
+	/* Enable video output bus */
 	return mt9v034_set_chip_control(mt9v034, 0,
 			MT9V034_CHIP_CONTROL_DOUT_ENABLE);	
 }
