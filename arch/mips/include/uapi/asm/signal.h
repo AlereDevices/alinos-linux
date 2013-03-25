@@ -99,6 +99,9 @@ typedef unsigned long old_sigset_t;		/* at least 32 bits */
 struct sigaction {
 	unsigned int	sa_flags;
 	__sighandler_t	sa_handler;
+#ifdef SA_RESTORER
+	__sigrestore_t sa_restorer;
+#endif 
 	sigset_t	sa_mask;
 };
 
