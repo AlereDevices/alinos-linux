@@ -86,11 +86,9 @@ ifeq ($(ARCH),x86_64)
 endif
 
 # Treat warnings as errors unless directed not to
-#if 0
 ifneq ($(WERROR),0)
 	CFLAGS_WERROR := -Werror
 endif
-#endif
 
 ifeq ("$(origin DEBUG)", "command line")
   PERF_DEBUG = $(DEBUG)
