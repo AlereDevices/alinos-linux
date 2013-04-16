@@ -624,7 +624,7 @@ endif
 
 ifdef CONFIG_FUNCTION_TRACER
 ifdef CONFIG_HAVE_FENTRY
-CC_USING_FENTRY	:= $(call cc-option, -mfentry -DCC_USING_FENTRY)
+CC_USING_FENTRY	:= $(call cc-option, -mfentry -DCC_USING_FENTRY -grecord-gcc-switches)
 endif
 KBUILD_CFLAGS	+= -pg $(CC_USING_FENTRY)
 KBUILD_AFLAGS	+= $(CC_USING_FENTRY)
