@@ -30,6 +30,8 @@
 
 		cpu@0 {
 			compatible = "arm,cortex-a8";
+			clocks = <&dpll1>;
+			clock-names = "cpu";
 			device_type = "cpu";
 			reg = <0x0>;
 		};
@@ -39,6 +41,16 @@
 		compatible = "arm,cortex-a8-pmu";
 		interrupts = <3>;
 		ti,hwmods = "debugss";
+	};
+
+	sysclk: sys {
+		#clock-cells = <0>;
+		compatible = "ti,omap-clock";
+	};
+
+	dpll1: dpll1 {
+		#clock-cells = <0>;
+		compatible = "ti,omap-clock";
 	};
 
 	/*
