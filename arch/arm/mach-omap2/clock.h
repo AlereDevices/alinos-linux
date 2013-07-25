@@ -358,6 +358,8 @@ unsigned long omap_fixed_divisor_recalc(struct clk_hw *hw,
 
 long omap2_dpll_round_rate(struct clk_hw *hw, unsigned long target_rate,
 			unsigned long *parent_rate);
+long omap2_dpll5_round_rate(struct clk_hw *hw, unsigned long target_rate,
+			unsigned long *parent_rate);
 unsigned long omap3_dpll_recalc(struct clk_hw *hw, unsigned long parent_rate);
 int omap3_noncore_dpll_enable(struct clk_hw *hw);
 void omap3_noncore_dpll_disable(struct clk_hw *hw);
