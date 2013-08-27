@@ -39,6 +39,7 @@
 
 #define MT9V034_PIXEL_ARRAY_HEIGHT			492
 #define MT9V034_PIXEL_ARRAY_WIDTH			782
+#define MT9V034_EXT_CLOCK					28800000
 
 #define MT9V034_CHIP_VERSION				0x00
 #define		MT9V034_CHIP_ID				0x1324
@@ -778,7 +779,7 @@ static int mt9v034_probe(struct i2c_client *client,
 	mutex_init(&mt9v034->power_lock);
 	mt9v034->pdata = client->dev.platform_data;
 
-	v4l2_ctrl_handler_init(&mt9v034->ctrls, ARRAY_SIZE(mt9v034_ctrls) + 5);
+	v4l2_ctrl_handler_init(&mt9v034->ctrls, ARRAY_SIZE(mt9v034_ctrls) + 6);
 
 	v4l2_ctrl_new_std(&mt9v034->ctrls, &mt9v034_ctrl_ops,
 			  V4L2_CID_AUTOGAIN, 0, 1, 1, 1);
@@ -795,6 +796,9 @@ static int mt9v034_probe(struct i2c_client *client,
 	v4l2_ctrl_new_std(&mt9v034->ctrls, &mt9v034_ctrl_ops,
 			  V4L2_CID_BLACK_LEVEL, MT9V034_BLACK_CALIB_MIN,
 			  MT9V034_BLACK_CALIB_MAX, 1, MT9V034_BLACK_CALIB_DEF);
+	v4l2_ctrl_new_std(&mt9v034->ctrls, &mt9v034_ctrl_ops,
+			  V4L2_CID_PIXEL_RATE, MT9V034_EXT_CLOCK,
+			  MT9V034_EXT_CLOCK, 1, MT9V034_EXT_CLOCK);
 
 	for (i = 0; i < ARRAY_SIZE(mt9v034_ctrls); ++i)
 		v4l2_ctrl_new_custom(&mt9v034->ctrls, &mt9v034_ctrls[i], NULL);
