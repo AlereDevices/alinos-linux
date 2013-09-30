@@ -426,6 +426,7 @@ static struct clk dpll4_m5x2_ck_3630 = {
 	.parent_names	= dpll4_m5x2_ck_parent_names,
 	.num_parents	= ARRAY_SIZE(dpll4_m5x2_ck_parent_names),
 	.ops		= &dpll4_m5x2_ck_3630_ops,
+	.flags		= CLK_SET_RATE_PARENT,
 };
 
 static struct clk cam_mclk;
