@@ -180,7 +180,7 @@ static int omap_aes_hw_init(struct omap_aes_dev *dd)
 	 * It may be long delays between requests.
 	 * Device might go to off mode to save power.
 	 */
-	clk_enable(dd->iclk);
+	clk_prepare_enable(dd->iclk);
 
 	if (!(dd->flags & FLAGS_INIT)) {
 		/* is it necessary to reset before every operation? */
@@ -855,7 +855,7 @@ static int omap_aes_probe(struct platform_device *pdev)
 		goto err_io;
 	}
 
-	clk_enable(dd->iclk);
+	clk_prepare_enable(dd->iclk);
 	reg = omap_aes_read(dd, AES_REG_REV);
 	dev_info(dev, "OMAP AES hw accel rev: %u.%u\n",
 		 (reg & AES_REG_REV_MAJOR) >> 4, reg & AES_REG_REV_MINOR);

@@ -292,15 +292,15 @@ static int usbhs_runtime_resume(struct device *dev)
 	spin_lock_irqsave(&omap->lock, flags);
 
 	if (omap->ehci_logic_fck && !IS_ERR(omap->ehci_logic_fck))
-		clk_enable(omap->ehci_logic_fck);
+		clk_prepare_enable(omap->ehci_logic_fck);
 
 	if (is_ehci_tll_mode(pdata->port_mode[0]))
-		clk_enable(omap->usbhost_p1_fck);
+		clk_prepare_enable(omap->usbhost_p1_fck);
 	if (is_ehci_tll_mode(pdata->port_mode[1]))
-		clk_enable(omap->usbhost_p2_fck);
+		clk_prepare_enable(omap->usbhost_p2_fck);
 
-	clk_enable(omap->utmi_p1_fck);
-	clk_enable(omap->utmi_p2_fck);
+	clk_prepare_enable(omap->utmi_p1_fck);
+	clk_prepare_enable(omap->utmi_p2_fck);
 
 	spin_unlock_irqrestore(&omap->lock, flags);
 
@@ -323,15 +323,15 @@ static int usbhs_runtime_suspend(struct device *dev)
 	spin_lock_irqsave(&omap->lock, flags);
 
 	if (is_ehci_tll_mode(pdata->port_mode[0]))
-		clk_disable(omap->usbhost_p1_fck);
+		clk_disable_unprepare(omap->usbhost_p1_fck);
 	if (is_ehci_tll_mode(pdata->port_mode[1]))
-		clk_disable(omap->usbhost_p2_fck);
+		clk_disable_unprepare(omap->usbhost_p2_fck);
 
-	clk_disable(omap->utmi_p2_fck);
-	clk_disable(omap->utmi_p1_fck);
+	clk_disable_unprepare(omap->utmi_p2_fck);
+	clk_disable_unprepare(omap->utmi_p1_fck);
 
 	if (omap->ehci_logic_fck && !IS_ERR(omap->ehci_logic_fck))
-		clk_disable(omap->ehci_logic_fck);
+		clk_disable_unprepare(omap->ehci_logic_fck);
 
 	spin_unlock_irqrestore(&omap->lock, flags);
 	omap_tll_disable();

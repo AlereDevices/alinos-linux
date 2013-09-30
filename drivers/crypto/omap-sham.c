@@ -1212,11 +1212,11 @@ static int omap_sham_probe(struct platform_device *pdev)
 		goto io_err;
 	}
 
-	clk_enable(dd->iclk);
+	clk_prepare_enable(dd->iclk);
 	dev_info(dev, "hw accel on OMAP rev %u.%u\n",
 		(omap_sham_read(dd, SHA_REG_REV) & SHA_REG_REV_MAJOR) >> 4,
 		omap_sham_read(dd, SHA_REG_REV) & SHA_REG_REV_MINOR);
-	clk_disable(dd->iclk);
+	clk_disable_unprepare(dd->iclk);
 
 	spin_lock(&sham.lock);
 	list_add_tail(&dd->list, &sham.dev_list);
