@@ -174,6 +174,8 @@ dtb-$(CONFIG_ARCH_OMAP2PLUS) += omap2420-h4.dtb \
 	omap3-beagle.dtb \
 	omap3-devkit8000.dtb \
 	omap3-beagle-xm.dtb \
+	omap3-beagle-xm-ab.dtb \
+	omap3-beagle-xm-c.dtb \
 	omap3-evm.dtb \
 	omap3-n900.dtb \
 	omap3-tobi.dtb \
