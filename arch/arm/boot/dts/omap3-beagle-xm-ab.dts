@@ -105,6 +105,7 @@
 		regulator-max-microvolt = <3300000>;
 		gpio = <&twl_gpio 18 0>;	/* GPIO LEDA */
 		startup-delay-us = <70000>;
+		enable-active-high;
 	};
 
 	/* HS USB Host PHY on PORT 2 */
