@@ -19,4 +19,20 @@
 	memory {
 		reg = <0x10000000 0x40000000>;
 	};
+
+    leds {
+        compatible = "gpio-leds";
+
+        user@1 {
+            label = "User 1";
+            gpios = <&gpio7 8 1>;
+            linux,default-trigger = "heartbeat";
+        };
+
+        user@2 {
+            label = "User 2";
+            gpios = <&gpio2 7 1>;
+            linux,default-trigger = "cpu0";
+        };
+    };
 };
