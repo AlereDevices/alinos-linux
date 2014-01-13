@@ -503,6 +503,18 @@ config TOUCHSCREEN_EDT_FT5X06
 	  To compile this driver as a module, choose M here: the
 	  module will be called edt-ft5x06.
 
+config TOUCHSCREEN_FT5306
+	tristate "FocalTech FT5306DE I2C Touchscreen support"
+	depends on I2C
+	help
+	  Say Y here if you have a FocalTech FT5306 based
+	  touchscreen connected to your system.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called ft5306de_ts.
+
 config TOUCHSCREEN_MIGOR
 	tristate "Renesas MIGO-R touchscreen"
 	depends on SH_MIGOR && I2C

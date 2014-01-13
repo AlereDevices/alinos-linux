@@ -43,6 +43,17 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c1_1>;
 	status = "okay";
+
+	touch: ft5306@38 {
+		compatible = "ft,ft5306de_ts";
+		reg = <0x38>;
+
+		reset-gpios = <0>;
+		interrupt-gpios = <&gpio3 26 0>;
+		wake-gpios = <&gpio6 31 0>;	
+		x-size = <480>;
+		y-size = <272>;
+	};
 };
 
 &i2c2 {
@@ -83,6 +94,8 @@
 				MX6QDL_PAD_ENET_RX_ER__GPIO1_IO24 0x80000000 /* GPIO1_24 EDM pin 262 = BUTTON3 */
 				MX6QDL_PAD_EIM_DA12__GPIO3_IO12   0x80000000 /* GPIO3_12 EDM pin 255 = BUTTON4 */
 				MX6QDL_PAD_EIM_DA11__GPIO3_IO11   0x80000000 /* GPIO3_11 EDM pin 256 = BUTTON5 */
+				MX6QDL_PAD_EIM_D26__GPIO3_IO26    0x80000000 /* GPIO3_26 EDM pin 259 = TOUCH INT */
+				MX6QDL_PAD_EIM_BCLK__GPIO6_IO31   0x80000000 /* GPIO6_31 EDM pin 260 = TOUCH WAKE */
 			>;
 		};
 	};
@@ -92,8 +105,6 @@
 			fsl,pins = <
 				MX6QDL_PAD_EIM_DA10__GPIO3_IO10   0x80000000 /* GPIO3_10 EDM pin 257 */
 				MX6QDL_PAD_EIM_D27__GPIO3_IO27    0x80000000 /* GPIO3_27 EDM pin 258 */
-				MX6QDL_PAD_EIM_D26__GPIO3_IO26    0x80000000 /* GPIO3_26 EDM pin 259 */
-				MX6QDL_PAD_EIM_BCLK__GPIO6_IO31   0x80000000 /* GPIO6_31 EDM pin 260 */
 			>;
 		};
 	};
