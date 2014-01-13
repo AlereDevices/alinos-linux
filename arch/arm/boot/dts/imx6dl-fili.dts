@@ -1,0 +1,22 @@
+/*
+ * Copyright 2014 Alere International Ltd
+ *
+ * Author: Rob Voisey <rob.voisey@alere.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ */
+/dts-v1/;
+#include "imx6dl.dtsi"
+#include "imx6qdl-fili.dtsi"
+
+/ {
+	model = "Alere Fili i.MX6 Dual Lite Board";
+	compatible = "alere,fili_dl", "fsl,imx6dl";
+
+	memory {
+		reg = <0x10000000 0x40000000>;
+	};
+};
