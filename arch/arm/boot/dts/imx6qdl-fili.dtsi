@@ -51,7 +51,10 @@
 	pinctrl-0 = <&pinctrl_i2c2_2>;
 	status = "okay";
 
-	};
+    blink: blinkm@09 {
+        compatible = "blinkm";
+        reg = <0x09>;
+    };
 };
 
 &iomuxc {
