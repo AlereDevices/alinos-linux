@@ -3,7 +3,6 @@
  *
  * Aptina MT9V034/A-0351 sensor driver
  *
- * Copyright (C) 2012 Alere Ltd <rob@fenconsultants.com>
  * Copyright (C) 2011 Aptina Imaging
  * 
  * Leverage mt9v032.c
@@ -60,14 +59,12 @@
 #define		MT9V034_WINDOW_WIDTH_MAX		752
 #define MT9V034_HORIZONTAL_BLANKING			0x05
 #define		MT9V034_HORIZONTAL_BLANKING_MIN		43
-#define		MT9V034_HORIZONTAL_BLANKING_DEF		1022
 #define		MT9V034_HORIZONTAL_BLANKING_MAX		1023
 #define MT9V034_VERTICAL_BLANKING			0x06
 #define		MT9V034_VERTICAL_BLANKING_MIN		4
 #define		MT9V034_VERTICAL_BLANKING_MAX		3000
 #define MT9V034_CHIP_CONTROL				0x07
 #define		MT9V034_CHIP_CONTROL_MASTER_MODE	(1 << 3)
-#define		MT9V034_CHIP_CONTROL_SNAPSHOT_MODE	(3 << 3)
 #define		MT9V034_CHIP_CONTROL_DOUT_ENABLE	(1 << 7)
 #define		MT9V034_CHIP_CONTROL_SEQUENTIAL		(1 << 8)
 #define MT9V034_SHUTTER_WIDTH1				0x08
@@ -102,13 +99,6 @@
 #define		MT9V034_DARK_AVG_LOW_THRESH_SHIFT	0
 #define		MT9V034_DARK_AVG_HIGH_THRESH_MASK	(255 << 8)
 #define		MT9V034_DARK_AVG_HIGH_THRESH_SHIFT	8
-#define MT9V034_BLACK_CALIB_CTRL				0x47
-#define		MT9V034_BLACK_CALIB_CTRL_OVERRIDE	(1 << 0)
-#define		MT9V034_BLACK_CALIB_CTRL_FRAMES		(4 << 5)
-#define MT9V034_BLACK_CALIB_VALUE				0x48
-#define		MT9V034_BLACK_CALIB_MIN			-127
-#define		MT9V034_BLACK_CALIB_DEF			0
-#define		MT9V034_BLACK_CALIB_MAX			128
 #define MT9V034_ROW_NOISE_CORR_CONTROL			0x70
 #define		MT9V034_ROW_NOISE_CORR_ENABLE		(1 << 5)
 #define		MT9V034_ROW_NOISE_CORR_USE_BLK_AVG	(1 << 7)
@@ -220,7 +210,6 @@ static int mt9v034_set_chip_control(struct mt9v034 *mt9v034, u16 clear, u16 set)
 		return ret;
 
 	mt9v034->chip_control = value;
-
 	return 0;
 }
 
@@ -241,33 +230,6 @@ mt9v034_update_aec_agc(struct mt9v034 *mt9v034, u16 which, int enable)
 		return ret;
 
 	mt9v034->aec_agc = value;
-	return 0;
-}
-
-static int
-mt9v034_update_blc(struct mt9v034 *mt9v034, s8 level, int override)
-{
-	struct i2c_client *client = v4l2_get_subdevdata(&mt9v034->subdev);
-	int value;
-	int ret;
-
-	if(override)
-		value = MT9V034_BLACK_CALIB_CTRL_OVERRIDE
-				| MT9V034_BLACK_CALIB_CTRL_FRAMES;
-	else
-		value = MT9V034_BLACK_CALIB_CTRL_FRAMES;
-
-	ret = mt9v034_write(client, MT9V034_BLACK_CALIB_CTRL, value);
-	if (ret < 0)
-		return ret;
-
-	if(override)
-	{
-		ret = mt9v034_write(client, MT9V034_BLACK_CALIB_VALUE, level);
-		if (ret < 0)
-			return ret;
-	}
-
 	return 0;
 }
 
@@ -302,12 +264,12 @@ static int mt9v034_power_on(struct mt9v034 *mt9v034)
 		return ret;
 
 	ret = mt9v034_write(client, MT9V034_CHIP_CONTROL,
-				 MT9V034_CHIP_CONTROL_SNAPSHOT_MODE
+				 MT9V034_CHIP_CONTROL_MASTER_MODE
 		       | MT9V034_CHIP_CONTROL_SEQUENTIAL);
 	if(ret < 0)
 		return ret;
 
-	mt9v034->chip_control = MT9V034_CHIP_CONTROL_SNAPSHOT_MODE
+	mt9v034->chip_control = MT9V034_CHIP_CONTROL_MASTER_MODE
 		       				| MT9V034_CHIP_CONTROL_SEQUENTIAL;
 	return ret;
 }
@@ -413,7 +375,7 @@ static int mt9v034_s_stream(struct v4l2_subdev *subdev, int enable)
 		return ret;
 
 	ret = mt9v034_write(client, MT9V034_HORIZONTAL_BLANKING,
-			    MT9V034_HORIZONTAL_BLANKING_DEF);
+			    max(43, 660 - rect->width));
 	if (ret < 0)
 		return ret;
 
@@ -580,9 +542,6 @@ static int mt9v034_s_ctrl(struct v4l2_ctrl *ctrl)
 	case V4L2_CID_EXPOSURE:
 		return mt9v034_write(client, MT9V034_TOTAL_SHUTTER_WIDTH,
 				     ctrl->val);
-	
-	case V4L2_CID_BLACK_LEVEL:
-		return mt9v034_update_blc(mt9v034, ctrl->val, 1);
 
 	case V4L2_CID_TEST_PATTERN:
 		switch (ctrl->val) {
@@ -622,7 +581,7 @@ static struct v4l2_ctrl_ops mt9v034_ctrl_ops = {
 static const struct v4l2_ctrl_config mt9v034_ctrls[] = {
 	{
 		.ops		= &mt9v034_ctrl_ops,
-		.id			= V4L2_CID_TEST_PATTERN,
+		.id		= V4L2_CID_TEST_PATTERN,
 		.type		= V4L2_CTRL_TYPE_INTEGER,
 		.name		= "Test pattern",
 		.min		= 0,
@@ -778,7 +737,7 @@ static int mt9v034_probe(struct i2c_client *client,
 	mutex_init(&mt9v034->power_lock);
 	mt9v034->pdata = client->dev.platform_data;
 
-	v4l2_ctrl_handler_init(&mt9v034->ctrls, ARRAY_SIZE(mt9v034_ctrls) + 5);
+	v4l2_ctrl_handler_init(&mt9v034->ctrls, ARRAY_SIZE(mt9v034_ctrls) + 4);
 
 	v4l2_ctrl_new_std(&mt9v034->ctrls, &mt9v034_ctrl_ops,
 			  V4L2_CID_AUTOGAIN, 0, 1, 1, 1);
@@ -792,9 +751,6 @@ static int mt9v034_probe(struct i2c_client *client,
 			  V4L2_CID_EXPOSURE, MT9V034_TOTAL_SHUTTER_WIDTH_MIN,
 			  MT9V034_TOTAL_SHUTTER_WIDTH_MAX, 1,
 			  MT9V034_TOTAL_SHUTTER_WIDTH_DEF);
-	v4l2_ctrl_new_std(&mt9v034->ctrls, &mt9v034_ctrl_ops,
-			  V4L2_CID_BLACK_LEVEL, MT9V034_BLACK_CALIB_MIN,
-			  MT9V034_BLACK_CALIB_MAX, 1, MT9V034_BLACK_CALIB_DEF);
 
 	for (i = 0; i < ARRAY_SIZE(mt9v034_ctrls); ++i)
 		v4l2_ctrl_new_custom(&mt9v034->ctrls, &mt9v034_ctrls[i], NULL);
@@ -870,5 +826,5 @@ module_init(mt9v034_init);
 module_exit(mt9v034_exit);
 
 MODULE_DESCRIPTION("Aptina MT9V034 Camera driver");
-MODULE_AUTHOR("Alere Ltd");
+MODULE_AUTHOR("Aptina Imaging");
 MODULE_LICENSE("GPL");
