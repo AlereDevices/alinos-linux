@@ -20,7 +20,7 @@
  ADR1 = 1, ADR0 = 1. Slave address = 0xB8 
  SW3 default config = 11
 */
-#define MT9V034_I2C_ADDR	0x48 //(0x90 >> 1)
+#define MT9V034_I2C_ADDR	0x58
 //#define MT9V034_I2C_ADDR	0x5C //(0xB8 >> 1)
 
 struct v4l2_subdev;
