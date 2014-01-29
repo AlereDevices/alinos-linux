@@ -263,7 +263,13 @@ static int mt9v034_power_on(struct mt9v034 *mt9v034)
 	if (ret < 0)
 		return ret;
 
-	return mt9v034_write(client, MT9V034_CHIP_CONTROL, 0);
+	ret = mt9v034_write(client, MT9V034_CHIP_CONTROL,
+                MT9V034_CHIP_CONTROL_MASTER_MODE | MT9V034_CHIP_CONTROL_SEQUENTIAL);
+	if(ret < 0)
+		return ret;
+
+	mt9v034->chip_control = MT9V034_CHIP_CONTROL_MASTER_MODE | MT9V034_CHIP_CONTROL_SEQUENTIAL;
+	return ret;
 }
 
 static void mt9v034_power_off(struct mt9v034 *mt9v034)
@@ -328,9 +334,6 @@ __mt9v034_get_pad_crop(struct mt9v034 *mt9v034, struct v4l2_subdev_fh *fh,
 
 static int mt9v034_s_stream(struct v4l2_subdev *subdev, int enable)
 {
-	const u16 mode = MT9V034_CHIP_CONTROL_MASTER_MODE
-		       | MT9V034_CHIP_CONTROL_DOUT_ENABLE
-		       | MT9V034_CHIP_CONTROL_SEQUENTIAL;
 	struct i2c_client *client = v4l2_get_subdevdata(subdev);
 	struct mt9v034 *mt9v034 = to_mt9v034(subdev);
 	struct v4l2_mbus_framefmt *format = &mt9v034->format;
@@ -340,7 +343,7 @@ static int mt9v034_s_stream(struct v4l2_subdev *subdev, int enable)
 	int ret;
 
 	if (!enable)
-		return mt9v034_set_chip_control(mt9v034, mode, 0);
+		return mt9v034_set_chip_control(mt9v034, MT9V034_CHIP_CONTROL_DOUT_ENABLE, 0);
 
 	/* Configure the window size and row/column bin */
 	hratio = DIV_ROUND_CLOSEST(rect->width, format->width);
@@ -373,8 +376,8 @@ static int mt9v034_s_stream(struct v4l2_subdev *subdev, int enable)
 	if (ret < 0)
 		return ret;
 
-	/* Switch to master "normal" mode */
-	return mt9v034_set_chip_control(mt9v034, 0, mode);
+	/* Enable video output bus */
+	return mt9v034_set_chip_control(mt9v034, 0, MT9V034_CHIP_CONTROL_DOUT_ENABLE);
 }
 
 static int mt9v034_enum_mbus_code(struct v4l2_subdev *subdev,
