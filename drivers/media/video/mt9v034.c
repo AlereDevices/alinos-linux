@@ -134,10 +134,6 @@
 #define		MT9V034_AGC_ENABLE			(1 << 1)
 #define MT9V034_THERMAL_INFO				0xc1
 
-
-//#define MT9V034_HEADBOARD
-#undef MT9V034_HEADBOARD
-
 struct mt9v034 {
 	struct v4l2_subdev subdev;
 	struct media_pad pad;
@@ -155,58 +151,25 @@ struct mt9v034 {
 	u16 aec_agc;
 };
 
-#ifdef MT9V034_HEADBOARD
-/**
- * mt9v034_config_PCA9543A - configure on-board I2C switch PCA9543APW of MT9V034 Headboards from Aptina
- * @client: pointer to i2c client
- * Configures the switch to enable channel 0 
- */
-static int 
-mt9v034_config_PCA9543A(const struct i2c_client *client)
-{
-	struct	i2c_msg msg;
-	int	ret;
-	u8	buf = 0x1;	//Enable channel 0
-	
-	msg.addr  = (0xE6 >> 1);	//slave address of PCA9543APW
-	msg.flags = 0;
-	msg.len   = 1;
-	msg.buf   = &buf;
-	
-	ret = i2c_transfer(client->adapter, &msg, 1);
-	if (ret < 0)
-		printk(KERN_ERR"Write failed to write to I2C Switch\n");
-
-	return 0;
-		
-}
-#endif //MT9V034_HEADBOARD
-
 static struct mt9v034 *to_mt9v034(struct v4l2_subdev *sd)
 {
 	return container_of(sd, struct mt9v034, subdev);
 }
 
-
 static int mt9v034_read(struct i2c_client *client, const u8 reg)
 {
-	s32 data = i2c_smbus_read_word_data(client, reg);
+	s32 data = i2c_smbus_read_word_swapped(client, reg);
 	dev_dbg(&client->dev, "%s: read 0x%04x from 0x%02x\n", __func__,
-		swab16(data), reg);
-	return data < 0 ? data : swab16(data);
+		data, reg);
+	return data;
 }
 
 static int mt9v034_write(struct i2c_client *client, const u8 reg,
-			 u16 data)
+			 const u16 data)
 {
-	int ret;
 	dev_dbg(&client->dev, "%s: writing 0x%04x to 0x%02x\n", __func__,
 		data, reg);
-	ret = i2c_smbus_write_word_data(client, reg, swab16(data));
-	if (ret < 0)
-		printk(KERN_ERR"MT9V034: writing 0x%04x to 0x%02x failed\n", data, reg);
-
-	return ret;
+	return i2c_smbus_write_word_swapped(client, reg, data);
 }
 
 static int mt9v034_set_chip_control(struct mt9v034 *mt9v034, u16 clear, u16 set)
@@ -276,40 +239,21 @@ static int mt9v034_power_on(struct mt9v034 *mt9v034)
 	struct i2c_client *client = v4l2_get_subdevdata(&mt9v034->subdev);
 	int ret;
 
-      	 /* Ensure RESET_BAR is low */
-       	if (mt9v034->pdata->reset) {
-	       	mt9v034->pdata->reset(&mt9v034->subdev, 1);
-	       	msleep(1);
-       	}
 	if (mt9v034->pdata->set_xclk) {
 		mt9v034->pdata->set_xclk(&mt9v034->subdev, mt9v034->pdata->ext_freq); 
 		udelay(1);
 	}
-       	/* Now RESET_BAR must be high */
-       	if (mt9v034->pdata->reset) {
-	       	mt9v034->pdata->reset(&mt9v034->subdev, 0);
-	       	msleep(1);
-       	}
-
-#ifdef MT9V034_HEADBOARD
-	ret = mt9v034_config_PCA9543A(client);
-#endif
 
 	/* Reset the chip and stop data read out */
 	ret = mt9v034_write(client, MT9V034_RESET, 1);
-	mdelay(10);
 	if (ret < 0)
 		return ret;
 
-	ret = mt9v034_write(client, MT9V034_CHIP_CONTROL,
-				 MT9V034_CHIP_CONTROL_SNAPSHOT_MODE
-		       | MT9V034_CHIP_CONTROL_SEQUENTIAL);
+	ret = mt9v034_write(client, MT9V034_RESET, 0);
 	if(ret < 0)
 		return ret;
 
-	mt9v034->chip_control = MT9V034_CHIP_CONTROL_SNAPSHOT_MODE
-		       				| MT9V034_CHIP_CONTROL_SEQUENTIAL;
-	return ret;
+	return mt9v034_write(client, MT9V034_CHIP_CONTROL, 0);
 }
 
 static void mt9v034_power_off(struct mt9v034 *mt9v034)
@@ -374,6 +318,9 @@ __mt9v034_get_pad_crop(struct mt9v034 *mt9v034, struct v4l2_subdev_fh *fh,
 
 static int mt9v034_s_stream(struct v4l2_subdev *subdev, int enable)
 {
+	const u16 mode = MT9V034_CHIP_CONTROL_MASTER_MODE
+		       | MT9V034_CHIP_CONTROL_DOUT_ENABLE
+		       | MT9V034_CHIP_CONTROL_SEQUENTIAL;
 	struct i2c_client *client = v4l2_get_subdevdata(subdev);
 	struct mt9v034 *mt9v034 = to_mt9v034(subdev);
 	struct v4l2_mbus_framefmt *format = &mt9v034->format;
@@ -383,8 +330,7 @@ static int mt9v034_s_stream(struct v4l2_subdev *subdev, int enable)
 	int ret;
 
 	if (!enable)
-		return mt9v034_set_chip_control(mt9v034,
-				MT9V034_CHIP_CONTROL_DOUT_ENABLE, 0);
+		return mt9v034_set_chip_control(mt9v034, mode, 0);
 
 	/* Configure the window size and row/column bin */
 	hratio = DIV_ROUND_CLOSEST(rect->width, format->width);
@@ -417,9 +363,8 @@ static int mt9v034_s_stream(struct v4l2_subdev *subdev, int enable)
 	if (ret < 0)
 		return ret;
 
-	/* Enable video output bus */
-	return mt9v034_set_chip_control(mt9v034, 0,
-			MT9V034_CHIP_CONTROL_DOUT_ENABLE);	
+	/* Switch to master "normal" mode */
+	return mt9v034_set_chip_control(mt9v034, 0, mode);
 }
 
 static int mt9v034_enum_mbus_code(struct v4l2_subdev *subdev,
@@ -776,7 +721,14 @@ static int mt9v034_probe(struct i2c_client *client,
 		return -ENOMEM;
 
 	mutex_init(&mt9v034->power_lock);
-	mt9v034->pdata = client->dev.platform_data;
+    mt9v034->pdata = client->dev.platform_data;
+
+    /* Reset sensor */
+    if (mt9v034->pdata->reset) {
+        mt9v034->pdata->reset(&mt9v034->subdev, 1);
+        msleep(1);
+        mt9v034->pdata->reset(&mt9v034->subdev, 0);
+    }
 
 	v4l2_ctrl_handler_init(&mt9v034->ctrls, ARRAY_SIZE(mt9v034_ctrls) + 5);
 
