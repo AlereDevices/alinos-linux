@@ -318,7 +318,7 @@ __mt9v034_get_pad_crop(struct mt9v034 *mt9v034, struct v4l2_subdev_fh *fh,
 
 static int mt9v034_s_stream(struct v4l2_subdev *subdev, int enable)
 {
-	const u16 mode = MT9V034_CHIP_CONTROL_MASTER_MODE
+	const u16 mode = MT9V034_CHIP_CONTROL_SNAPSHOT_MODE
 		       | MT9V034_CHIP_CONTROL_DOUT_ENABLE
 		       | MT9V034_CHIP_CONTROL_SEQUENTIAL;
 	struct i2c_client *client = v4l2_get_subdevdata(subdev);
