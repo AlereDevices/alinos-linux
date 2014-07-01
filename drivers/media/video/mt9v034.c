@@ -69,7 +69,7 @@
 #define		MT9V034_CHIP_CONTROL_MASTER_MODE	(1 << 3)
 #define		MT9V034_CHIP_CONTROL_SNAPSHOT_MODE	(3 << 3)
 #define		MT9V034_CHIP_CONTROL_DOUT_ENABLE	(1 << 7)
-#define		MT9V034_CHIP_CONTROL_SEQUENTIAL		(1 << 8)
+#define		MT9V034_CHIP_CONTROL_SIMULTANEOUS	(1 << 8)
 #define MT9V034_SHUTTER_WIDTH1				0x08
 #define MT9V034_SHUTTER_WIDTH2				0x09
 #define MT9V034_SHUTTER_WIDTH_CONTROL			0x0a
@@ -319,8 +319,7 @@ __mt9v034_get_pad_crop(struct mt9v034 *mt9v034, struct v4l2_subdev_fh *fh,
 static int mt9v034_s_stream(struct v4l2_subdev *subdev, int enable)
 {
 	const u16 mode = MT9V034_CHIP_CONTROL_MASTER_MODE
-		       | MT9V034_CHIP_CONTROL_DOUT_ENABLE
-		       | MT9V034_CHIP_CONTROL_SEQUENTIAL;
+		       | MT9V034_CHIP_CONTROL_DOUT_ENABLE;
 	struct i2c_client *client = v4l2_get_subdevdata(subdev);
 	struct mt9v034 *mt9v034 = to_mt9v034(subdev);
 	struct v4l2_mbus_framefmt *format = &mt9v034->format;
